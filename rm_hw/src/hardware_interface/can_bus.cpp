@@ -145,11 +145,6 @@ void CanBus::read(ros::Time time)
         int16_t cur = (frame.data[4] << 8u) | frame.data[5];
         act_data.temp = frame.data[6];
 
-        // TODO: Check the code blew
-        //      if (act_data.type.find("6020") != std::string::npos)
-        //        if (std::abs(q - act_data.q_last) < 3)
-        //          q = act_data.q_last;
-
         // Multiple circle
         if (act_data.seq != 0)
         {  // first receive
@@ -158,24 +153,27 @@ void CanBus::read(ros::Time time)
           else if (act_data.q_raw - act_data.q_last < -4096)
             act_data.q_circle++;
         }
+        ros::Duration dt;
         try
         {  // Duration will be out of dual 32-bit range while motor failure
-          act_data.frequency = 1. / (frame_stamp.stamp - act_data.stamp).toSec();
+          dt = frame_stamp.stamp - act_data.stamp;
         }
         catch (std::runtime_error& ex)
         {
         }
-        act_data.stamp = frame_stamp.stamp;
-        act_data.seq++;
+        act_data.frequency = 1. / dt.toSec();
         act_data.q_last = act_data.q_raw;
         // Converter raw CAN data to position velocity and effort.
-        act_data.pos =
+        double pos =
             act_coeff.act2pos * static_cast<double>(act_data.q_raw + 8191 * act_data.q_circle) + act_data.offset;
-        act_data.vel = act_coeff.act2vel * static_cast<double>(act_data.qd_raw);
+        act_data.vel = (pos - act_data.pos) / dt.toSec();
+        act_data.pos = pos;
         act_data.effort = act_coeff.act2effort * static_cast<double>(cur);
         // Low pass filter
         act_data.lp_filter->input(act_data.vel);
         act_data.vel = act_data.lp_filter->output();
+        act_data.stamp = frame_stamp.stamp;
+        act_data.seq++;
         continue;
       }
     }
