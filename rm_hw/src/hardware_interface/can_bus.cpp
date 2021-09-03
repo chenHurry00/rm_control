@@ -153,6 +153,8 @@ void CanBus::read(ros::Time time)
           else if (act_data.q_raw - act_data.q_last < -4096)
             act_data.q_circle++;
         }
+        act_data.seq++;
+        act_data.q_last = act_data.q_raw;
         ros::Duration dt;
         try
         {  // Duration will be out of dual 32-bit range while motor failure
@@ -162,7 +164,6 @@ void CanBus::read(ros::Time time)
         {
         }
         act_data.frequency = 1. / dt.toSec();
-        act_data.q_last = act_data.q_raw;
         // Converter raw CAN data to position velocity and effort.
         double pos =
             act_coeff.act2pos * static_cast<double>(act_data.q_raw + 8191 * act_data.q_circle) + act_data.offset;
@@ -173,7 +174,6 @@ void CanBus::read(ros::Time time)
         act_data.lp_filter->input(act_data.vel);
         act_data.vel = act_data.lp_filter->output();
         act_data.stamp = frame_stamp.stamp;
-        act_data.seq++;
         continue;
       }
     }
@@ -231,8 +231,8 @@ void CanBus::read(ros::Time time)
       else
         imu_frame_data[i] = value;
     }
-    if (!is_too_big)
-    {  // TODO remove this ugly statement
+    if (!is_too_big)  // TODO remove this ugly statement
+    {
       for (auto& itr : *data_ptr_.id2imu_data_)
       {  // imu data are consisted of three frames
         switch (frame.can_id - static_cast<unsigned int>(itr.first))
