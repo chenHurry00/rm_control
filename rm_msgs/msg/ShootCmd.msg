@@ -8,6 +8,7 @@ uint8 SPEED_16M_PER_SECOND = 2
 uint8 SPEED_18M_PER_SECOND = 3
 uint8 SPEED_30M_PER_SECOND = 4
 
+uint8 burst_mode
 uint8 mode
 uint8 speed
 float64 hz
