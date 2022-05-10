@@ -12,3 +12,4 @@ uint8 mode
 uint8 speed
 float64 hz
 time stamp
+uint8 burst_mode

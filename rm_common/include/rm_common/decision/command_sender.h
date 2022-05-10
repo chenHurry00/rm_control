@@ -189,6 +189,7 @@ public:
   }
   void setZero() override{};
   PowerLimit* power_limit_;
+  ros::Publisher chassis_commander_pub_;
 };
 
 class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd>
@@ -243,6 +244,7 @@ public:
   void setEject(bool flag)
   {
     eject_flag_ = flag;
+    msg_.eject = flag;
   }
   bool getEject() const
   {
@@ -303,6 +305,7 @@ public:
   void setBurstMode(bool burst_flag)
   {
     heat_limit_->setMode(burst_flag);
+    msg_.burst_mode = burst_flag;
   }
   bool getBurstMode()
   {
