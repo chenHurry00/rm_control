@@ -78,6 +78,9 @@ rm_referee:
     time_change:
       - name: "capacitor"
         config: { start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }
+    gimbal_chassis:
+      - name: "aux"
+        config: { type: "Line", color: "cyan" }
     fixed:
       - name: "2m"
         config: { type: "line", width: 2, color: "yellow",

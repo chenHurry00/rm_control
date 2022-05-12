@@ -135,7 +135,7 @@ void Graph::updatePosition(int index)
   }
 }
 
-void Graph::updatePosition(double yaw_joint_)
+void Graph::updatePosition(double yaw_joint_, const ros::Time& time)
 {
   config_.start_x_ = 960 - 50 * sin(yaw_joint_);
   config_.start_y_ = 540 + 50 * cos(yaw_joint_);

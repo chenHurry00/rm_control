@@ -26,7 +26,7 @@ public:
 
   void updatePosition(int index);
 
-  void updatePosition(double yaw_joint_);
+  void updatePosition(double yaw_joint_, const ros::Time& time);
 
   void setOperation(const rm_common::GraphOperation& operation)
   {

@@ -301,7 +301,7 @@ void GimbalChassisUi::update(const std::string& name, const ros::Time& time)
   auto graph = graph_vector_.find(name);
   if (graph != graph_vector_.end())
   {
-    graph->second->updatePosition(data_.joint_state_.position[8]);
+    graph->second->updatePosition(data_.joint_state_.position[8], time);
     graph->second->display();
   }
 }
