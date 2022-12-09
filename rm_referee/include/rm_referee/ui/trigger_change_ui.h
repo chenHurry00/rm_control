@@ -125,4 +125,37 @@ private:
   rm_msgs::GameRobotHp robot_hp_;
   void updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0, bool sub_flag = false) override;
 };
+
+class RobotInteractiveTrackTimeChangeUi : public TriggerChangeUi
+{
+public:
+  explicit RobotInteractiveTrackTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base)
+    : TriggerChangeUi(rpc_value, base, "robot_interactive_track")
+  {
+    robot_track_graph1 = graph_;
+    robot_track_graph2 = new Graph(rpc_value["config"], base_, UiBase::id_++);
+    robot_track_graph3 = new Graph(rpc_value["config"], base_, UiBase::id_++);
+    robot_track_graph4 = new Graph(rpc_value["config"], base_, UiBase::id_++);
+
+    interactive_sender_ = new Graph(base_);
+  }
+  void add() override;
+  void erasure() override;
+  std::string getRobotName(uint8_t id);
+  int getRobotHp(uint8_t id);
+  void updateInteractiveData(const rm_referee::InteractiveData& interactive_data, const ros::Time& time);
+  void updateRobotHpDate(const rm_msgs::GameRobotHp data)
+  {
+    robot_hp_ = data;
+  }
+  void updateTrackData(const rm_msgs::TrackData::ConstPtr data, const ros::Time& time);
+
+private:
+  std::vector<std::pair<int, int>> date_container_;
+  Graph *robot_track_graph1, *robot_track_graph2, *robot_track_graph3, *robot_track_graph4;
+  Graph* interactive_sender_;
+  rm_msgs::GameRobotHp robot_hp_;
+  void updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0, bool sub_flag = false) override;
+};
+
 }  // namespace rm_referee
