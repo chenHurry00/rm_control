@@ -103,4 +103,66 @@ private:
   std::string getTargetState(uint8_t target, uint8_t armor_target);
   uint8_t det_target_, shoot_frequency_, det_armor_target_, det_color_, gimbal_eject_;
 };
+
+class BloodVolumeTriggerChangeUi : public TriggerChangeUi
+{
+public:
+  explicit BloodVolumeTriggerChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base)
+    : TriggerChangeUi(rpc_value, base, "blood_volume"){};
+  void add() override;
+  void erasure() override;
+  std::string getRobotName(uint8_t id);
+  int getRobotHp(uint8_t id);
+  void updateRobotHpDate(const rm_msgs::GameRobotHp data)
+  {
+    robot_hp_ = data;
+  }
+  void updateTrackData(const rm_msgs::TrackData::ConstPtr data, const ros::Time& time);
+
+private:
+  bool is_deleted_;
+  int next_pos_x_, next_pos_y_;
+  rm_msgs::GameRobotHp robot_hp_;
+  void updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0, bool sub_flag = false) override;
+};
+
+class RobotInteractiveTrackTriggerChangeUi : public TriggerChangeUi
+{
+public:
+  explicit RobotInteractiveTrackTriggerChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base)
+    : TriggerChangeUi(rpc_value, base, "robot_interactive_track")
+  {
+    robot_track_graph0 = graph_;
+    robot_track_graph1 = new Graph(rpc_value["config"], base_, UiBase::id_++);
+    robot_track_graph2 = new Graph(rpc_value["config"], base_, UiBase::id_++);
+    robot_track_graph3 = new Graph(rpc_value["config"], base_, UiBase::id_++);
+
+    graph_vector_.push_back(robot_track_graph0);
+    graph_vector_.push_back(robot_track_graph1);
+    graph_vector_.push_back(robot_track_graph2);
+    graph_vector_.push_back(robot_track_graph3);
+
+    interactive_sender_ = new Graph(base_);
+  }
+  void add() override;
+  void erasure() override;
+  std::string getRobotName(uint8_t id);
+  std::string getInformation(int sender_id, int track_id);
+  int getRobotHp(uint8_t id);
+  void updateInteractiveData(const rm_referee::InteractiveData& interactive_data, const ros::Time& time);
+  void updateRobotHpDate(const rm_msgs::GameRobotHp data)
+  {
+    robot_hp_ = data;
+  }
+  void updateTrackData(const rm_msgs::TrackData::ConstPtr data, const ros::Time& time);
+
+private:
+  std::vector<std::pair<int, int>> date_container_;
+  std::vector<Graph*> graph_vector_;
+  Graph *robot_track_graph0, *robot_track_graph1, *robot_track_graph2, *robot_track_graph3;
+  Graph* interactive_sender_;
+  rm_msgs::GameRobotHp robot_hp_;
+  void updateConfig(uint8_t ui_order, bool is_urgency, uint8_t sub_mode = 0, bool sub_flag = false) override;
+};
+
 }  // namespace rm_referee
