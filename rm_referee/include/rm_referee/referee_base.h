@@ -66,6 +66,7 @@ public:
   GimbalTriggerChangeUi* gimbal_trigger_change_ui_{};
   TargetTriggerChangeUi* target_trigger_change_ui_{};
   BloodVolumeTriggerChangeUi* blood_volume_trigger_change_ui_{};
+  RobotInteractiveTrackTriggerChangeUi* robot_interactive_track_trigger_change_ui_{};
 
   CapacitorTimeChangeUi* capacitor_time_change_ui_{};
   EffortTimeChangeUi* effort_time_change_ui_{};

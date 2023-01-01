@@ -335,7 +335,7 @@ void BloodVolumeTriggerChangeUi::updateTrackData(const rm_msgs::TrackData::Const
     erasure();
 }
 
-int RobotInteractiveTrackTimeChangeUi::getRobotHp(uint8_t id)
+int RobotInteractiveTrackTriggerChangeUi::getRobotHp(uint8_t id)
 {
   if (id == rm_msgs::GameRobotStatus::RED_ENGINEER)
     return robot_hp_.red_2_robot_hp;
@@ -365,67 +365,158 @@ int RobotInteractiveTrackTimeChangeUi::getRobotHp(uint8_t id)
     return -1;
 }
 
-void RobotInteractiveTrackTimeChangeUi::updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode, bool sub_flag)
+std::string RobotInteractiveTrackTriggerChangeUi::getRobotName(uint8_t id)
 {
+  if (id == rm_msgs::GameRobotStatus::RED_ENGINEER)
+    return "RED_ENGINEER";
+  else if (id == rm_msgs::GameRobotStatus::RED_SENTRY)
+    return "RED_SENTRY";
+  else if (id == rm_msgs::GameRobotStatus::RED_HERO)
+    return "RED_HERO";
+  else if (id == rm_msgs::GameRobotStatus::RED_STANDARD_3)
+    return "RED_S3";
+  else if (id == rm_msgs::GameRobotStatus::RED_STANDARD_4)
+    return "RED_S4";
+  else if (id == rm_msgs::GameRobotStatus::RED_STANDARD_5)
+    return "RED_S5";
+  else if (id == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
+    return "BLUE_ENGINEER";
+  else if (id == rm_msgs::GameRobotStatus::BLUE_SENTRY)
+    return "BLUE_SENTRY";
+  else if (id == rm_msgs::GameRobotStatus::BLUE_HERO)
+    return "BLUE_HERO";
+  else if (id == rm_msgs::GameRobotStatus::BLUE_STANDARD_3)
+    return "BLUE_S3";
+  else if (id == rm_msgs::GameRobotStatus::BLUE_STANDARD_4)
+    return "BLUE_S4";
+  else if (id == rm_msgs::GameRobotStatus::BLUE_STANDARD_5)
+    return "BLUE_S5";
+  else
+    return "error";
 }
 
-void RobotInteractiveTrackTimeChangeUi::updateTrackData(const rm_msgs::TrackData::ConstPtr data, const ros::Time& time)
+std::string RobotInteractiveTrackTriggerChangeUi::getInformation(int sender_id, int track_id)
 {
-  if (base_.robot_id_ < 100)
+  return (" " + std::to_string(getRobotHp(sender_id)) + " " + std::to_string(getRobotHp(track_id)) + " " +
+          getRobotName(track_id));
+}
+
+void RobotInteractiveTrackTriggerChangeUi::add()
+{
+  robot_track_graph0->setOperation(rm_referee::GraphOperation::ADD);
+  robot_track_graph0->display(true);
+  robot_track_graph0->sendUi(ros::Time::now());
+  robot_track_graph1->setOperation(rm_referee::GraphOperation::ADD);
+  robot_track_graph1->display(true);
+  robot_track_graph1->sendUi(ros::Time::now());
+  robot_track_graph2->setOperation(rm_referee::GraphOperation::ADD);
+  robot_track_graph2->display(true);
+  robot_track_graph2->sendUi(ros::Time::now());
+  robot_track_graph3->setOperation(rm_referee::GraphOperation::ADD);
+  robot_track_graph3->display(true);
+  robot_track_graph3->sendUi(ros::Time::now());
+}
+
+void RobotInteractiveTrackTriggerChangeUi::erasure()
+{
+  robot_track_graph0->setOperation(rm_referee::GraphOperation::DELETE);
+  robot_track_graph0->display(true);
+  robot_track_graph0->sendUi(ros::Time::now());
+  robot_track_graph1->setOperation(rm_referee::GraphOperation::DELETE);
+  robot_track_graph1->display(true);
+  robot_track_graph1->sendUi(ros::Time::now());
+  robot_track_graph2->setOperation(rm_referee::GraphOperation::DELETE);
+  robot_track_graph2->display(true);
+  robot_track_graph2->sendUi(ros::Time::now());
+  robot_track_graph3->setOperation(rm_referee::GraphOperation::DELETE);
+  robot_track_graph3->display(true);
+  robot_track_graph3->sendUi(ros::Time::now());
+}
+
+void RobotInteractiveTrackTriggerChangeUi::updateConfig(uint8_t ui_order, bool is_urgency, uint8_t sub_mode,
+                                                        bool sub_flag)
+{
+  if (is_urgency)
+    graph_vector_.at(ui_order)->setColor(rm_referee::GraphColor::PINK);
+  else
+    graph_vector_.at(ui_order)->setColor(rm_referee::GraphColor::GREEN);
+
+  graph_vector_.at(ui_order)->setTitle(getRobotName(date_container_.at(ui_order).first));
+  graph_vector_.at(ui_order)->setContent(
+      getInformation(date_container_.at(ui_order).first, date_container_.at(ui_order).second));
+  graph_vector_.at(ui_order)->setOperation(rm_referee::GraphOperation::UPDATE);
+  graph_vector_.at(ui_order)->display(true);
+  graph_vector_.at(ui_order)->sendUi(ros::Time::now());
+}
+
+void RobotInteractiveTrackTriggerChangeUi::updateTrackData(const rm_msgs::TrackData::ConstPtr data,
+                                                           const ros::Time& time)
+{
+  static int last_send_data = -1;
+  if (data->id != last_send_data && data->id >= 0)
   {
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::RED_HERO, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::RED_STANDARD_3, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::RED_STANDARD_4, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::RED_STANDARD_5, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::RED_ENGINEER, data->id);
-  }
-  else if (base_.robot_id_ > 100)
-  {
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::BLUE_HERO, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::BLUE_STANDARD_3, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::BLUE_STANDARD_4, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::BLUE_STANDARD_5, data->id);
-    interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
-                                                 rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
-                                             rm_msgs::GameRobotStatus::BLUE_ENGINEER, data->id);
+    if (base_.robot_id_ < 100)
+    {
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::RED_HERO, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::RED_STANDARD_3, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::RED_STANDARD_4, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::RED_STANDARD_5, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::RED_ENGINEER, data->id);
+    }
+    else if (base_.robot_id_ > 100)
+    {
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::BLUE_HERO, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::BLUE_STANDARD_3, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::BLUE_STANDARD_4, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::BLUE_STANDARD_5, data->id);
+      interactive_sender_->sendInteractiveData(rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN +
+                                                   rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK,
+                                               rm_msgs::GameRobotStatus::BLUE_ENGINEER, data->id);
+    }
+
+    last_send_data = data->id;
   }
 }
 
-void RobotInteractiveTrackTimeChangeUi::updateInteractiveData(const rm_referee::InteractiveData& interactive_data,
-                                                              const ros::Time& time)
+void RobotInteractiveTrackTriggerChangeUi::updateInteractiveData(const rm_referee::InteractiveData& interactive_data,
+                                                                 const ros::Time& time)
 {
   if (interactive_data.header_data_.data_cmd_id_ !=
       rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN + rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK)
     return;
-  for (int i = 0; i <= date_container_.size(); i++)
+  for (unsigned int i = 0; i < date_container_.size(); i++)
   {
-    if (date_container_.at(i).first == interactive_data.header_data_.sender_id_)
+    if (i == date_container_.size() - 1 && date_container_.at(i).first != interactive_data.header_data_.sender_id_)
+    {
+      if (date_container_.size() < 4)
+      {
+        date_container_.push_back(std::make_pair(interactive_data.header_data_.sender_id_, interactive_data.data_));
+      }
+    }
+    else if (date_container_.at(i).first == interactive_data.header_data_.sender_id_)
     {
       date_container_.at(i).second = interactive_data.data_;
-      break;
     }
-    if (i == date_container_.size())
-    {
-      date_container_.push_back(std::make_pair(interactive_data.header_data_.sender_id_, interactive_data.data_));
-    }
+
+    updateConfig(i, getRobotHp(date_container_.at(i).first) < 30);
   }
 }
 

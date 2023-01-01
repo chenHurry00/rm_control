@@ -141,6 +141,8 @@ void RefereeBase::robotHurtDataCallBack(const rm_msgs::RobotHurt& data, const ro
 }
 void RefereeBase::interactiveDataCallBack(const rm_referee::InteractiveData& data, const ros::Time& last_get_data_time)
 {
+  if (robot_interactive_track_trigger_change_ui_)
+    robot_interactive_track_trigger_change_ui_->updateInteractiveData(data, last_get_data_time);
 }
 void RefereeBase::eventDataCallBack(const rm_msgs::EventData& data, const ros::Time& last_get_data_time)
 {
