@@ -444,6 +444,9 @@ void RobotInteractiveTrackTriggerChangeUi::updateConfig(uint8_t ui_order, bool i
   graph_vector_.at(ui_order)->setTitle(getRobotName(date_container_.at(ui_order).first));
   graph_vector_.at(ui_order)->setContent(
       getInformation(date_container_.at(ui_order).first, date_container_.at(ui_order).second));
+  graph_vector_.at(ui_order)->setStartX(100);
+  graph_vector_.at(ui_order)->setStartY(800 - 100 * ui_order);
+
   graph_vector_.at(ui_order)->setOperation(rm_referee::GraphOperation::UPDATE);
   graph_vector_.at(ui_order)->display(true);
   graph_vector_.at(ui_order)->sendUi(ros::Time::now());
@@ -502,6 +505,11 @@ void RobotInteractiveTrackTriggerChangeUi::updateInteractiveData(const rm_refere
   if (interactive_data.header_data_.data_cmd_id_ !=
       rm_referee::DataCmdId::ROBOT_INTERACTIVE_CMD_MIN + rm_msgs::GameStatus::INTERACTIVE_DATA_TRACK)
     return;
+  if (date_container_.empty())
+  {
+    date_container_.push_back(std::make_pair(interactive_data.header_data_.sender_id_, interactive_data.data_));
+  }
+
   for (unsigned int i = 0; i < date_container_.size(); i++)
   {
     if (i == date_container_.size() - 1 && date_container_.at(i).first != interactive_data.header_data_.sender_id_)
@@ -515,7 +523,10 @@ void RobotInteractiveTrackTriggerChangeUi::updateInteractiveData(const rm_refere
     {
       date_container_.at(i).second = interactive_data.data_;
     }
-
+  }
+  for (unsigned int i = 0; i < date_container_.size(); i++)
+  {
+    ROS_INFO("%d",date_container_.at(i).second = interactive_data.data_);
     updateConfig(i, getRobotHp(date_container_.at(i).first) < 30);
   }
 }

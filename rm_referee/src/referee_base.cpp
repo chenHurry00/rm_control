@@ -46,6 +46,8 @@ RefereeBase::RefereeBase(ros::NodeHandle& nh, Base& base) : base_(base), nh_(nh)
       target_trigger_change_ui_ = new TargetTriggerChangeUi(rpc_value[i], base_);
     if (rpc_value[i]["name"] == "blood_volume")
       blood_volume_trigger_change_ui_ = new BloodVolumeTriggerChangeUi(rpc_value[i], base_);
+    if (rpc_value[i]["name"] == "robot_interactive_track")
+      robot_interactive_track_trigger_change_ui_ = new RobotInteractiveTrackTriggerChangeUi(rpc_value[i], base_);
   }
 
   ui_nh.getParam("time_change", rpc_value);
@@ -168,6 +170,8 @@ void RefereeBase::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
 {
   if (blood_volume_trigger_change_ui_)
     blood_volume_trigger_change_ui_->updateTrackData(data, ros::Time::now());
+  if(robot_interactive_track_trigger_change_ui_)
+    robot_interactive_track_trigger_change_ui_->updateTrackData(data,ros::Time::now());
 }
 void RefereeBase::chassisCmdDataCallback(const rm_msgs::ChassisCmd::ConstPtr& data)
 {
