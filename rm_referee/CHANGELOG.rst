@@ -2,6 +2,30 @@
 Changelog for package rm_referee
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.17 (2023-02-21)
+-------------------
+* Merge pull request `#100 <https://github.com/ye-luo-xi-tui/rm_control/issues/100>`_ from ljq-lv/modified_msgs_name
+  Modified msgs name
+* Modified the function and topic name
+* Modified the function and topic name
+* Modified the msg "EngineerCmd" name
+* Merge pull request `#88 <https://github.com/ye-luo-xi-tui/rm_control/issues/88>`_ from sloretz/sloretz_remove_invalid_char
+  Remove 0x01 char from changelog
+* Merge pull request `#86 <https://github.com/ye-luo-xi-tui/rm_control/issues/86>`_ from chenhuiYu00/dev/lane_line_ui
+  Add lane line ui.
+* Add reference_joint param.
+* Remove 0x01 char from changelog
+* Add pitch index.
+* Update Ui.
+* Optimize LaneLine ui.
+* Merge branch 'rm-controls:master' into master
+* Add LaneLine ui.
+* Merge pull request `#84 <https://github.com/ye-luo-xi-tui/rm_control/issues/84>`_ from ye-luo-xi-tui/master
+  0.1.16
+* Merge branch 'rm-controls:master' into master
+* Merge branch 'rm-controls:master' into master
+* Contributors: Shane Loretz, ljq-lv, ye-luo-xi-tui, yuchen, 吕骏骐
+
 0.1.16 (2022-11-24)
 -------------------
 * Merge pull request `#80 <https://github.com/ye-luo-xi-tui/rm_control/issues/80>`_ from ljq-lv/new_ui_test
@@ -79,37 +103,6 @@ Changelog for package rm_referee
 * Ui work success,ore ui is in test.
 * Try reuse power limit state.
 * Change Variable name,color problem in powerlimitstate.
-* Merge branch 'referee1' of github.com:chenhuiYu00/rm_control into referee1
-   Conflicts:
-  	rm_common/include/rm_common/decision/command_sender.h
-  	rm_common/include/rm_common/decision/service_caller.h
-  	rm_msgs/msg/referee/CalibrationStatus.msg
-  	rm_msgs/msg/referee/CapacityData.msg
-  	rm_msgs/msg/referee/DetectionStatus.msg
-  	rm_msgs/msg/referee/EngineerCmd.msg
-  	rm_msgs/msg/referee/GameRobotHp.msg
-  	rm_msgs/msg/referee/GameRobotStatus.msg
-  	rm_msgs/msg/referee/GameStatus.msg
-  	rm_msgs/msg/referee/PowerHeatData.msg
-  	rm_msgs/msg/referee/StateCmd.msg
-  	rm_referee/config/standard3.yaml
-  	rm_referee/include/rm_referee/common/data.h
-  	rm_referee/include/rm_referee/common/referee_base.h
-  	rm_referee/include/rm_referee/engineer_referee.h
-  	rm_referee/include/rm_referee/hero_referee.h
-  	rm_referee/include/rm_referee/referee/referee.h
-  	rm_referee/include/rm_referee/referee/ui.h
-  	rm_referee/include/rm_referee/robot_referee.h
-  	rm_referee/include/rm_referee/standard_referee.h
-  	rm_referee/launch/load.launch
-  	rm_referee/src/common/referee_base.cpp
-  	rm_referee/src/engineer_referee.cpp
-  	rm_referee/src/hero_referee.cpp
-  	rm_referee/src/main.cpp
-  	rm_referee/src/referee/referee.cpp
-  	rm_referee/src/referee/ui.cpp
-  	rm_referee/src/robot_referee.cpp
-  	rm_referee/src/standard_referee.cpp
 * Fixed some problems,not ready.
 * Update config,referee only send ui once.
 * Add ore remain,dart remain ui.
