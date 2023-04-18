@@ -41,9 +41,9 @@ RefereeBase::RefereeBase(ros::NodeHandle& nh, Base& base) : base_(base), nh_(nh)
       if (rpc_value[i]["name"] == "chassis")
         chassis_trigger_change_ui_ = new ChassisTriggerChangeUi(rpc_value[i], base_);
       if (rpc_value[i]["name"] == "shooter")
-        shooter_trigger_change_ui_ = new ShooterTriggerChangeUi(rpc_value[i], base_);
+        shooter_trigger_change_ui_ = new EventTriggerChangeUi(rpc_value[i], base_);
       if (rpc_value[i]["name"] == "gimbal")
-        gimbal_trigger_change_ui_ = new GimbalTriggerChangeUi(rpc_value[i], base_);
+        gimbal_trigger_change_ui_ = new EventTriggerChangeUi(rpc_value[i], base_);
       if (rpc_value[i]["name"] == "target")
         target_trigger_change_ui_ = new TargetTriggerChangeUi(rpc_value[i], base_);
       if (rpc_value[i]["name"] == "camera")
@@ -183,12 +183,12 @@ void RefereeBase::shootStateCallback(const rm_msgs::ShootState::ConstPtr& data)
   if (target_trigger_change_ui_)
     target_trigger_change_ui_->updateShootStateData(data);
   if (shooter_trigger_change_ui_)
-    shooter_trigger_change_ui_->updateShootStateData(data);
+    shooter_trigger_change_ui_->updateShootStateData(data, "shooter");
 }
 void RefereeBase::gimbalCmdDataCallback(const rm_msgs::GimbalCmd::ConstPtr& data)
 {
   if (gimbal_trigger_change_ui_)
-    gimbal_trigger_change_ui_->updateGimbalCmdData(data);
+    gimbal_trigger_change_ui_->updateGimbalStateData(data, "gimbal");
 }
 void RefereeBase::cardCmdDataCallback(const rm_msgs::StateCmd::ConstPtr& data)
 {
@@ -203,9 +203,9 @@ void RefereeBase::manualDataCallBack(const rm_msgs::ManualToReferee::ConstPtr& d
   if (chassis_trigger_change_ui_)
     chassis_trigger_change_ui_->updateManualCmdData(data);
   if (shooter_trigger_change_ui_)
-    shooter_trigger_change_ui_->updateManualCmdData(data);
+    shooter_trigger_change_ui_->updateManualCmdData(data, "shooter");
   if (gimbal_trigger_change_ui_)
-    gimbal_trigger_change_ui_->updateManualCmdData(data);
+    gimbal_trigger_change_ui_->updateManualCmdData(data, "gimbal");
   if (target_trigger_change_ui_)
     target_trigger_change_ui_->updateManualCmdData(data);
   if (cover_flash_ui_)

@@ -97,86 +97,95 @@ void ChassisTriggerChangeUi::updateCapacityData(const rm_msgs::CapacityData data
   displayInCapacity();
 }
 
-void ShooterTriggerChangeUi::display()
+void EventTriggerChangeUi::display(const std::string& event)
 {
-  updateConfig(shooter_mode_, 0, shoot_frequency_, false);
-  TriggerChangeUi::display();
+  if (event == "shooter")
+  {
+    updateConfig(event, shooter_mode_, 0, shoot_frequency_, false);
+    TriggerChangeUi::display();
+  }
+  if (event == "gimbal")
+  {
+    updateConfig(event, gimbal_mode_, gimbal_eject_);
+    graph_->setOperation(rm_referee::GraphOperation::UPDATE);
+    graph_->displayTwice(true);
+    graph_->sendUi(ros::Time::now());
+  }
 }
 
-void ShooterTriggerChangeUi::updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode, bool sub_flag)
+void EventTriggerChangeUi::updateConfig(const std::string& event, uint8_t main_mode, bool main_flag, uint8_t sub_mode,
+                                        bool sub_flag)
 {
-  graph_->setContent(getShooterState(main_mode));
-  if (sub_mode == rm_common::HeatLimit::LOW)
-    graph_->setColor(rm_referee::GraphColor::WHITE);
-  else if (sub_mode == rm_common::HeatLimit::HIGH)
-    graph_->setColor(rm_referee::GraphColor::YELLOW);
-  else if (sub_mode == rm_common::HeatLimit::BURST)
-    graph_->setColor(rm_referee::GraphColor::ORANGE);
+  if (event == "shooter")
+  {
+    graph_->setContent(getEventState(event, main_mode));
+    if (sub_mode == rm_common::HeatLimit::LOW)
+      graph_->setColor(rm_referee::GraphColor::WHITE);
+    else if (sub_mode == rm_common::HeatLimit::HIGH)
+      graph_->setColor(rm_referee::GraphColor::YELLOW);
+    else if (sub_mode == rm_common::HeatLimit::BURST)
+      graph_->setColor(rm_referee::GraphColor::ORANGE);
+  }
+  if (event == "gimbal")
+  {
+    graph_->setContent(getEventState(event, main_mode));
+    if (main_flag)
+      graph_->setColor(rm_referee::GraphColor::ORANGE);
+    else
+      graph_->setColor(rm_referee::GraphColor::WHITE);
+  }
 }
 
-std::string ShooterTriggerChangeUi::getShooterState(uint8_t state)
+std::string EventTriggerChangeUi::getEventState(const std::string& event, uint8_t state)
 {
-  if (state == rm_msgs::ShootState::STOP)
-    return "stop";
-  else if (state == rm_msgs::ShootState::READY)
-    return "ready";
-  else if (state == rm_msgs::ShootState::PUSH)
-    return "push";
-  else if (state == rm_msgs::ShootState::BLOCK)
-    return "block";
-  else
-    return "error";
+  if (event == "shooter")
+  {
+    if (state == rm_msgs::ShootState::STOP)
+      return "stop";
+    else if (state == rm_msgs::ShootState::READY)
+      return "ready";
+    else if (state == rm_msgs::ShootState::PUSH)
+      return "push";
+    else if (state == rm_msgs::ShootState::BLOCK)
+      return "block";
+    else
+      return "error";
+  }
+  if (event == "gimbal")
+  {
+    if (state == rm_msgs::GimbalCmd::DIRECT)
+      return "direct";
+    else if (state == rm_msgs::GimbalCmd::RATE)
+      return "rate";
+    else if (state == rm_msgs::GimbalCmd::TRACK)
+      return "track";
+    else
+      return "error";
+  }
 }
 
-void ShooterTriggerChangeUi::updateShootStateData(const rm_msgs::ShootState::ConstPtr& data)
+void EventTriggerChangeUi::updateShootStateData(const rm_msgs::ShootState::ConstPtr& data, const std::string& event)
 {
   shooter_mode_ = data->state;
-  display();
+  display("shooter");
 }
 
-void ShooterTriggerChangeUi::updateManualCmdData(rm_msgs::ManualToReferee::ConstPtr data)
+void EventTriggerChangeUi::updateManualCmdData(rm_msgs::ManualToReferee::ConstPtr data, const std::string& event)
 {
-  shoot_frequency_ = data->shoot_frequency;
+  if (event == "shooter")
+  {
+    shoot_frequency_ = data->shoot_frequency;
+  }
+  if (event == "gimbal")
+  {
+    gimbal_eject_ = data->gimbal_eject;
+  }
 }
 
-void GimbalTriggerChangeUi::display()
-{
-  updateConfig(gimbal_mode_, gimbal_eject_);
-  graph_->setOperation(rm_referee::GraphOperation::UPDATE);
-  graph_->displayTwice(true);
-  graph_->sendUi(ros::Time::now());
-}
-
-void GimbalTriggerChangeUi::updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode, bool sub_flag)
-{
-  graph_->setContent(getGimbalState(main_mode));
-  if (main_flag)
-    graph_->setColor(rm_referee::GraphColor::ORANGE);
-  else
-    graph_->setColor(rm_referee::GraphColor::WHITE);
-}
-
-std::string GimbalTriggerChangeUi::getGimbalState(uint8_t mode)
-{
-  if (mode == rm_msgs::GimbalCmd::DIRECT)
-    return "direct";
-  else if (mode == rm_msgs::GimbalCmd::RATE)
-    return "rate";
-  else if (mode == rm_msgs::GimbalCmd::TRACK)
-    return "track";
-  else
-    return "error";
-}
-
-void GimbalTriggerChangeUi::updateGimbalCmdData(const rm_msgs::GimbalCmd::ConstPtr data)
+void EventTriggerChangeUi::updateGimbalStateData(const rm_msgs::GimbalCmd::ConstPtr data, const std::string& event)
 {
   gimbal_mode_ = data->mode;
-  display();
-}
-
-void GimbalTriggerChangeUi::updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data)
-{
-  gimbal_eject_ = data->gimbal_eject;
+  display("gimbal");
 }
 
 void TargetTriggerChangeUi::display()

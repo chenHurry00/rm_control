@@ -62,8 +62,8 @@ public:
   ros::Subscriber camera_name_sub_;
 
   ChassisTriggerChangeUi* chassis_trigger_change_ui_{};
-  ShooterTriggerChangeUi* shooter_trigger_change_ui_{};
-  GimbalTriggerChangeUi* gimbal_trigger_change_ui_{};
+  EventTriggerChangeUi* shooter_trigger_change_ui_{};
+  EventTriggerChangeUi* gimbal_trigger_change_ui_{};
   TargetTriggerChangeUi* target_trigger_change_ui_{};
   CameraTriggerChangeUi* camera_trigger_change_ui_{};
 
