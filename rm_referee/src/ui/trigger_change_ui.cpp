@@ -161,6 +161,8 @@ std::string EventTriggerChangeUi::getEventState(uint8_t mode)
     else
       return "error";
   }
+  else
+    return "error";
 }
 
 void EventTriggerChangeUi::updateEventStateData(uint8_t event_state)
