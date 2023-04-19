@@ -21,7 +21,6 @@ public:
   virtual void add();
   virtual void erasure();
   virtual void updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data){};
-  virtual void updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data, const std::string& event){};
   virtual void updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data, const ros::Time& last_get_data_time){};
 
 protected:

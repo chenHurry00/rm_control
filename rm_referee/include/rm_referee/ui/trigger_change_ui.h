@@ -21,11 +21,9 @@ public:
   }
   virtual void setContent(const std::string& content);
   virtual void display();
-  virtual void display(const std::string& event);
   virtual void updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0, bool sub_flag = false){};
-  virtual void updateConfig(const std::string& event, uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0,
-                            bool sub_flag = false){};
 };
+
 class ChassisTriggerChangeUi : public TriggerChangeUi
 {
 public:
@@ -64,17 +62,15 @@ public:
       ROS_WARN("Event trigger config 's member 'event_name' not defined");
     graph_->setContent("0");
   }
-  void updateShootStateData(const rm_msgs::ShootState::ConstPtr& data, const std::string& event);
-  void updateGimbalStateData(const rm_msgs::GimbalCmd::ConstPtr data, const std::string& event);
-  void updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data, const std::string& event);
+  void updateEventStateData(uint8_t event_state);
+  void updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data);
 
 private:
-  void display(const std::string& event);
-  void updateConfig(const std::string& event, uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0,
-                    bool sub_flag = false);
-  std::string getEventState(const std::string& event, uint8_t mode);
+  void display();
+  void updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode = 0, bool sub_flag = false);
+  std::string getEventState(uint8_t mode);
   std::string event_;
-  uint8_t shooter_mode_, shoot_frequency_, gimbal_mode_, gimbal_eject_;
+  uint8_t event_state_, shoot_frequency_, gimbal_eject_;
 };
 
 class TargetTriggerChangeUi : public TriggerChangeUi

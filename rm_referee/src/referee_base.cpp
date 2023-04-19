@@ -183,12 +183,12 @@ void RefereeBase::shootStateCallback(const rm_msgs::ShootState::ConstPtr& data)
   if (target_trigger_change_ui_)
     target_trigger_change_ui_->updateShootStateData(data);
   if (shooter_trigger_change_ui_)
-    shooter_trigger_change_ui_->updateShootStateData(data, "shooter");
+    shooter_trigger_change_ui_->updateEventStateData(data->state);
 }
 void RefereeBase::gimbalCmdDataCallback(const rm_msgs::GimbalCmd::ConstPtr& data)
 {
   if (gimbal_trigger_change_ui_)
-    gimbal_trigger_change_ui_->updateGimbalStateData(data, "gimbal");
+    gimbal_trigger_change_ui_->updateEventStateData(data->mode);
 }
 void RefereeBase::cardCmdDataCallback(const rm_msgs::StateCmd::ConstPtr& data)
 {
@@ -203,9 +203,9 @@ void RefereeBase::manualDataCallBack(const rm_msgs::ManualToReferee::ConstPtr& d
   if (chassis_trigger_change_ui_)
     chassis_trigger_change_ui_->updateManualCmdData(data);
   if (shooter_trigger_change_ui_)
-    shooter_trigger_change_ui_->updateManualCmdData(data, "shooter");
+    shooter_trigger_change_ui_->updateManualCmdData(data);
   if (gimbal_trigger_change_ui_)
-    gimbal_trigger_change_ui_->updateManualCmdData(data, "gimbal");
+    gimbal_trigger_change_ui_->updateManualCmdData(data);
   if (target_trigger_change_ui_)
     target_trigger_change_ui_->updateManualCmdData(data);
   if (cover_flash_ui_)

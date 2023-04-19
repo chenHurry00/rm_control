@@ -97,28 +97,27 @@ void ChassisTriggerChangeUi::updateCapacityData(const rm_msgs::CapacityData data
   displayInCapacity();
 }
 
-void EventTriggerChangeUi::display(const std::string& event)
+void EventTriggerChangeUi::display()
 {
-  if (event == "shooter")
+  if (event_ == "shooter")
   {
-    updateConfig(event, shooter_mode_, 0, shoot_frequency_, false);
+    updateConfig(event_state_, 0, shoot_frequency_, false);
     TriggerChangeUi::display();
   }
-  if (event == "gimbal")
+  if (event_ == "gimbal")
   {
-    updateConfig(event, gimbal_mode_, gimbal_eject_);
+    updateConfig(event_state_, gimbal_eject_);
     graph_->setOperation(rm_referee::GraphOperation::UPDATE);
     graph_->displayTwice(true);
     graph_->sendUi(ros::Time::now());
   }
 }
 
-void EventTriggerChangeUi::updateConfig(const std::string& event, uint8_t main_mode, bool main_flag, uint8_t sub_mode,
-                                        bool sub_flag)
+void EventTriggerChangeUi::updateConfig(uint8_t main_mode, bool main_flag, uint8_t sub_mode, bool sub_flag)
 {
-  if (event == "shooter")
+  if (event_ == "shooter")
   {
-    graph_->setContent(getEventState(event, main_mode));
+    graph_->setContent(getEventState(event_state_));
     if (sub_mode == rm_common::HeatLimit::LOW)
       graph_->setColor(rm_referee::GraphColor::WHITE);
     else if (sub_mode == rm_common::HeatLimit::HIGH)
@@ -126,9 +125,9 @@ void EventTriggerChangeUi::updateConfig(const std::string& event, uint8_t main_m
     else if (sub_mode == rm_common::HeatLimit::BURST)
       graph_->setColor(rm_referee::GraphColor::ORANGE);
   }
-  if (event == "gimbal")
+  if (event_ == "gimbal")
   {
-    graph_->setContent(getEventState(event, main_mode));
+    graph_->setContent(getEventState(event_state_));
     if (main_flag)
       graph_->setColor(rm_referee::GraphColor::ORANGE);
     else
@@ -136,56 +135,50 @@ void EventTriggerChangeUi::updateConfig(const std::string& event, uint8_t main_m
   }
 }
 
-std::string EventTriggerChangeUi::getEventState(const std::string& event, uint8_t state)
+std::string EventTriggerChangeUi::getEventState(uint8_t mode)
 {
-  if (event == "shooter")
+  if (event_ == "shooter")
   {
-    if (state == rm_msgs::ShootState::STOP)
+    if (mode == rm_msgs::ShootState::STOP)
       return "stop";
-    else if (state == rm_msgs::ShootState::READY)
+    else if (mode == rm_msgs::ShootState::READY)
       return "ready";
-    else if (state == rm_msgs::ShootState::PUSH)
+    else if (mode == rm_msgs::ShootState::PUSH)
       return "push";
-    else if (state == rm_msgs::ShootState::BLOCK)
+    else if (mode == rm_msgs::ShootState::BLOCK)
       return "block";
     else
       return "error";
   }
-  if (event == "gimbal")
+  if (event_ == "gimbal")
   {
-    if (state == rm_msgs::GimbalCmd::DIRECT)
+    if (mode == rm_msgs::GimbalCmd::DIRECT)
       return "direct";
-    else if (state == rm_msgs::GimbalCmd::RATE)
+    else if (mode == rm_msgs::GimbalCmd::RATE)
       return "rate";
-    else if (state == rm_msgs::GimbalCmd::TRACK)
+    else if (mode == rm_msgs::GimbalCmd::TRACK)
       return "track";
     else
       return "error";
   }
 }
 
-void EventTriggerChangeUi::updateShootStateData(const rm_msgs::ShootState::ConstPtr& data, const std::string& event)
+void EventTriggerChangeUi::updateEventStateData(uint8_t event_state)
 {
-  shooter_mode_ = data->state;
-  display("shooter");
+  event_state_ = event_state;
+  display();
 }
 
-void EventTriggerChangeUi::updateManualCmdData(rm_msgs::ManualToReferee::ConstPtr data, const std::string& event)
+void EventTriggerChangeUi::updateManualCmdData(rm_msgs::ManualToReferee::ConstPtr data)
 {
-  if (event == "shooter")
+  if (event_ == "shooter")
   {
     shoot_frequency_ = data->shoot_frequency;
   }
-  if (event == "gimbal")
+  if (event_ == "gimbal")
   {
     gimbal_eject_ = data->gimbal_eject;
   }
-}
-
-void EventTriggerChangeUi::updateGimbalStateData(const rm_msgs::GimbalCmd::ConstPtr data, const std::string& event)
-{
-  gimbal_mode_ = data->mode;
-  display("gimbal");
 }
 
 void TargetTriggerChangeUi::display()
