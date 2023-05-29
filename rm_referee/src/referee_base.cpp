@@ -21,12 +21,14 @@ RefereeBase::RefereeBase(ros::NodeHandle& nh, Base& base) : base_(base), nh_(nh)
                                                                     &RefereeBase::shootStateCallback, this);
   RefereeBase::gimbal_cmd_sub_ = nh.subscribe<rm_msgs::GimbalCmd>("/controllers/gimbal_controller/command", 10,
                                                                   &RefereeBase::gimbalCmdDataCallback, this);
-  RefereeBase::card_cmd_sub_ = nh.subscribe<rm_msgs::StateCmd>("/controllers/card_controller/command", 10,
-                                                               &RefereeBase::cardCmdDataCallback, this);
-  RefereeBase::engineer_cmd_sub_ =
-      nh.subscribe<rm_msgs::EngineerUi>("/engineer_ui", 10, &RefereeBase::engineerUiDataCallback, this);
+  RefereeBase::engineer_ui_sub_ =
+      nh.subscribe<rm_msgs::EngineerUi>("/engineer_ui", 30, &RefereeBase::engineerUiDataCallback, this);
   RefereeBase::manual_data_sub_ =
       nh.subscribe<rm_msgs::ManualToReferee>("/manual_to_referee", 10, &RefereeBase::manualDataCallBack, this);
+  RefereeBase::exchange_state_sub_ =
+      nh.subscribe<rm_msgs::ExchangerMsg>("/pnp_publisher", 10, &RefereeBase::exchangeStateDataCallBack, this);
+  RefereeBase::planning_result_sub_ =
+      nh.subscribe<std_msgs::Int32>("/planning_result", 10, &RefereeBase::planningResultDataCallBack, this);
   RefereeBase::camera_name_sub_ = nh.subscribe("/camera_name", 10, &RefereeBase::cameraNameCallBack, this);
   RefereeBase::balance_state_sub_ = nh.subscribe("/state", 10, &RefereeBase::balanceStateCallback, this);
   RefereeBase::track_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 10, &RefereeBase::trackCallBack, this);
@@ -56,6 +58,24 @@ RefereeBase::RefereeBase(ros::NodeHandle& nh, Base& base) : base_(base), nh_(nh)
         target_view_angle_trigger_change_ui_ = new TargetViewAngleTriggerChangeUi(rpc_value[i], base_);
       if (rpc_value[i]["name"] == "camera")
         camera_trigger_change_ui_ = new CameraTriggerChangeUi(rpc_value[i], base_);
+      if (rpc_value[i]["name"] == "drag")
+        drag_state_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "drag");
+      if (rpc_value[i]["name"] == "gripper")
+        gripper_state_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "gripper");
+      if (rpc_value[i]["name"] == "exchange")
+        exchange_state_trigger_change_ui_ = new ExchangeStateTriggerChangeUi(rpc_value[i], base_);
+      if (rpc_value[i]["name"] == "planning")
+        planning_result_trigger_change_ui_ = new PlanningResultTriggerChangeUi(rpc_value[i], base_);
+      if (rpc_value[i]["name"] == "step")
+        step_name_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "step");
+      if (rpc_value[i]["name"] == "reversal")
+        reversal_state_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "reversal");
+      if (rpc_value[i]["name"] == "stone")
+        stone_num_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "stone");
+      if (rpc_value[i]["name"] == "temperature")
+        joint_temperature_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "temperature");
+      if (rpc_value[i]["name"] == "servo_mode")
+        servo_mode_trigger_change_ui_ = new StringTriggerChangeUi(rpc_value[i], base_, "mode");
       if (rpc_value[i]["name"] == "balance_control_method")
         balance_control_method_trigger_change_ui_ = new BalanceControlMethodTriggerChangeUi(rpc_value[i], base_);
     }
@@ -75,6 +95,8 @@ RefereeBase::RefereeBase(ros::NodeHandle& nh, Base& base) : base_(base), nh_(nh)
         rotation_time_change_ui_ = new RotationTimeChangeUi(rpc_value[i], base_, &graph_queue_);
       if (rpc_value[i]["name"] == "lane_line")
         lane_line_time_change_ui_ = new LaneLineTimeChangeGroupUi(rpc_value[i], base_, &graph_queue_);
+      if (rpc_value[i]["name"] == "pitch")
+        pitch_angle_time_change_ui_ = new PitchAngleTimeChangeUi(rpc_value[i], base_, &graph_queue_);
       if (rpc_value[i]["name"] == "balance_pitch")
         balance_pitch_time_change_group_ui_ = new BalancePitchTimeChangeGroupUi(rpc_value[i], base_, &graph_queue_);
     }
@@ -122,6 +144,24 @@ void RefereeBase::addUi()
     camera_trigger_change_ui_->add();
   if (balance_control_method_trigger_change_ui_)
     balance_control_method_trigger_change_ui_->add();
+  if (drag_state_trigger_change_ui_)
+    drag_state_trigger_change_ui_->add();
+  if (gripper_state_trigger_change_ui_)
+    gripper_state_trigger_change_ui_->add();
+  if (exchange_state_trigger_change_ui_)
+    exchange_state_trigger_change_ui_->add();
+  if (planning_result_trigger_change_ui_)
+    planning_result_trigger_change_ui_->add();
+  if (step_name_trigger_change_ui_)
+    step_name_trigger_change_ui_->add();
+  if (servo_mode_trigger_change_ui_)
+    servo_mode_trigger_change_ui_->add();
+  if (reversal_state_trigger_change_ui_)
+    reversal_state_trigger_change_ui_->add();
+  if (stone_num_trigger_change_ui_)
+    stone_num_trigger_change_ui_->add();
+  if (joint_temperature_trigger_change_ui_)
+    joint_temperature_trigger_change_ui_->add();
   if (fixed_ui_)
     fixed_ui_->add();
   if (effort_time_change_ui_)
@@ -138,6 +178,8 @@ void RefereeBase::addUi()
     lane_line_time_change_ui_->add();
   if (balance_pitch_time_change_group_ui_)
     balance_pitch_time_change_group_ui_->add();
+  if (pitch_angle_time_change_ui_)
+    pitch_angle_time_change_ui_->add();
   add_ui_times_++;
 }
 
@@ -220,6 +262,8 @@ void RefereeBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& da
     rotation_time_change_ui_->updateForQueue();
   if (lane_line_time_change_ui_ && !is_adding_)
     lane_line_time_change_ui_->updateJointStateData(data, ros::Time::now());
+  if (pitch_angle_time_change_ui_ && !is_adding_)
+    pitch_angle_time_change_ui_->updateJointStateData(data, ros::Time::now());
 }
 void RefereeBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
 {
@@ -263,13 +307,23 @@ void RefereeBase::gimbalCmdDataCallback(const rm_msgs::GimbalCmd::ConstPtr& data
   if (gimbal_trigger_change_ui_ && !is_adding_)
     gimbal_trigger_change_ui_->updateGimbalCmdData(data);
 }
-void RefereeBase::cardCmdDataCallback(const rm_msgs::StateCmd::ConstPtr& data)
-{
-}
+
 void RefereeBase::engineerUiDataCallback(const rm_msgs::EngineerUi::ConstPtr& data)
 {
-  if (progress_time_change_ui_ && !is_adding_)
-    progress_time_change_ui_->updateEngineerUiData(data, ros::Time::now());
+  if (drag_state_trigger_change_ui_ && !is_adding_)
+    drag_state_trigger_change_ui_->updateStringUiData(data->drag_state);
+  if (gripper_state_trigger_change_ui_ && !is_adding_)
+    gripper_state_trigger_change_ui_->updateStringUiData(data->gripper_state);
+  if (stone_num_trigger_change_ui_ && !is_adding_)
+    stone_num_trigger_change_ui_->updateStringUiData(data->stone_num);
+  if (step_name_trigger_change_ui_ && !is_adding_)
+    step_name_trigger_change_ui_->updateStringUiData(data->current_step_name);
+  if (servo_mode_trigger_change_ui_ && !is_adding_)
+    servo_mode_trigger_change_ui_->updateStringUiData(data->servo_mode);
+  if (reversal_state_trigger_change_ui_ && !is_adding_)
+    reversal_state_trigger_change_ui_->updateStringUiData(data->reversal_state);
+  if (joint_temperature_trigger_change_ui_ && !is_adding_)
+    joint_temperature_trigger_change_ui_->updateStringUiData(data->joint_temperature);
 }
 void RefereeBase::manualDataCallBack(const rm_msgs::ManualToReferee::ConstPtr& data)
 {
@@ -303,5 +357,15 @@ void RefereeBase::balanceStateCallback(const rm_msgs::BalanceStateConstPtr& data
 {
   if (balance_pitch_time_change_group_ui_)
     balance_pitch_time_change_group_ui_->calculatePointPosition(data, ros::Time::now());
+}
+void RefereeBase::exchangeStateDataCallBack(const rm_msgs::ExchangerMsg::ConstPtr& data)
+{
+  if (exchange_state_trigger_change_ui_ && !is_adding_)
+    exchange_state_trigger_change_ui_->updateExchangeStateData(data);
+}
+void RefereeBase::planningResultDataCallBack(const std_msgs::Int32::ConstPtr& data)
+{
+  if (planning_result_trigger_change_ui_ && !is_adding_)
+    planning_result_trigger_change_ui_->updatePlanningResultData(data);
 }
 }  // namespace rm_referee
