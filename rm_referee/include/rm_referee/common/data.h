@@ -64,7 +64,6 @@
 #include <rm_msgs/EngineerUi.h>
 #include <rm_msgs/GameRobotHp.h>
 #include <rm_msgs/BalanceState.h>
-#include <rm_msgs/CapacityData.h>
 #include <rm_msgs/DartClientCmd.h>
 #include <rm_msgs/ActuatorState.h>
 #include <rm_msgs/MapSentryData.h>
@@ -82,7 +81,6 @@
 #include <rm_msgs/SupplyProjectileAction.h>
 #include <rm_msgs/IcraBuffDebuffZoneStatus.h>
 #include <rm_msgs/PowerManagementSampleAndStatusData.h>
-#include <rm_msgs/ExchangerMsg.h>
 
 namespace rm_referee
 {
