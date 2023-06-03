@@ -66,6 +66,8 @@ public:
       ROS_ERROR("power gain no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("buffer_threshold", buffer_threshold_))
       ROS_ERROR("buffer threshold no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("minimum_power", minimum_power_))
+      ROS_ERROR("minimum power no defined (namespace: %s)", nh.getNamespace().c_str());
   }
   typedef enum
   {
@@ -136,7 +138,7 @@ public:
                 charge(chassis_cmd);
                 break;
               default:
-                zero(chassis_cmd);
+                min(chassis_cmd);
                 break;
             }
           }
@@ -161,9 +163,9 @@ private:
     chassis_cmd.power_limit = chassis_power_limit_ + plus_power;
     // TODO:Add protection when buffer<5
   }
-  void zero(rm_msgs::ChassisCmd& chassis_cmd)
+  void min(rm_msgs::ChassisCmd& chassis_cmd)
   {
-    chassis_cmd.power_limit = 0.0;
+    chassis_cmd.power_limit = minimum_power_;
   }
   void burst(rm_msgs::ChassisCmd& chassis_cmd, bool is_gyro)
   {
@@ -181,6 +183,7 @@ private:
   int chassis_power_buffer_;
   int robot_id_, chassis_power_limit_;
   float cap_energy_;
+  double minimum_power_;
   double safety_power_{};
   double capacitor_threshold_{};
   double charge_power_{}, extra_power_{}, burst_power_{};
