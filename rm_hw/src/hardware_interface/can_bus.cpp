@@ -54,14 +54,20 @@ CanBus::CanBus(const std::string& bus_name, CanDataPtr data_ptr, int thread_prio
   rm_frame0_.can_dlc = 8;
   rm_frame1_.can_id = 0x1FF;
   rm_frame1_.can_dlc = 8;
+  ch_frame0_.can_id = 0x100;
+  ch_frame0_.can_dlc = 8;
+  ch_frame1_.can_id = 0x200;
+  ch_frame1_.can_dlc = 8;
 }
 
 void CanBus::write()
 {
-  bool has_write_frame0 = false, has_write_frame1 = false;
+  bool has_write_frame0 = false, has_write_frame1 = false, has_write_ch_frame0 = false, has_write_ch_frame1 = false;
   // safety first
   std::fill(std::begin(rm_frame0_.data), std::end(rm_frame0_.data), 0);
   std::fill(std::begin(rm_frame1_.data), std::end(rm_frame1_.data), 0);
+  std::fill(std::begin(ch_frame0_.data), std::end(ch_frame0_.data), 0);
+  std::fill(std::begin(ch_frame1_.data), std::end(ch_frame1_.data), 0);
 
   for (auto& item : *data_ptr_.id2act_data_)
   {
@@ -108,12 +114,37 @@ void CanBus::write()
       frame.data[7] = tau & 0xff;
       socket_can_.write(&frame);
     }
+    else if (item.second.type.find("ch") != std::string::npos)
+    {
+      if (item.second.halted)
+        continue;
+      const ActCoeff& act_coeff = data_ptr_.type2act_coeffs_->find(item.second.type)->second;
+      int id = item.first - 0x101;
+      double cmd =
+          minAbs(act_coeff.effort2act * item.second.exe_effort, act_coeff.max_out);  // add max_range to act_data
+      if (-1 < id && id < 4)
+      {
+        ch_frame0_.data[2 * id] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
+        ch_frame0_.data[2 * id + 1] = static_cast<uint8_t>(cmd);
+        has_write_ch_frame0 = true;
+      }
+      else if (3 < id && id < 8)
+      {
+        ch_frame1_.data[2 * (id - 4)] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
+        ch_frame1_.data[2 * (id - 4) + 1] = static_cast<uint8_t>(cmd);
+        has_write_ch_frame1 = true;
+      }
+    }
   }
 
   if (has_write_frame0)
     socket_can_.write(&rm_frame0_);
   if (has_write_frame1)
     socket_can_.write(&rm_frame1_);
+  if (has_write_ch_frame0)
+    socket_can_.write(&ch_frame0_);
+  if (has_write_ch_frame1)
+    socket_can_.write(&ch_frame1_);
 }
 
 void CanBus::read(ros::Time time)
@@ -170,6 +201,30 @@ void CanBus::read(ros::Time time)
         act_data.lp_filter->input(act_data.vel, frame_stamp.stamp);
         act_data.vel = act_data.lp_filter->output();
         continue;
+      }
+      else if (act_data.type.find("ch") != std::string::npos)
+      {
+        //        act_data.ch_q_raw = *(int32_t*)&frame.data[0];
+        //        act_data.ch_qd_raw = *(int16_t*)&frame.data[4];
+        act_data.ch_q_raw = (frame.data[3] << 24u) | frame.data[2] << 16u | frame.data[1] << 8u | frame.data[0];
+        act_data.ch_qd_raw = (frame.data[5] << 8u) | frame.data[4];
+
+        try
+        {  // Duration will be out of dual 32-bit range while motor failure
+          act_data.frequency = 1. / (frame_stamp.stamp - act_data.stamp).toSec();
+        }
+        catch (std::runtime_error& ex)
+        {
+        }
+        act_data.stamp = frame_stamp.stamp;
+        act_data.seq++;
+        act_data.ch_q_last = act_data.ch_q_raw;
+        // Converter raw CAN data to position velocity and effort.
+        act_data.pos = act_coeff.act2pos * act_data.ch_q_raw + act_data.offset;
+        act_data.vel = act_coeff.act2vel * static_cast<double>(act_data.ch_qd_raw);
+        // Low pass filter
+        act_data.lp_filter->input(act_data.vel, frame_stamp.stamp);
+        act_data.vel = act_data.lp_filter->output();
       }
     }
     // Check MIT Cheetah motor

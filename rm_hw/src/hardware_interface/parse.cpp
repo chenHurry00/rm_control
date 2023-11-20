@@ -209,14 +209,16 @@ bool RmRobotHW::parseActData(XmlRpc::XmlRpcValue& act_datas, ros::NodeHandle& ro
       act_state_interface_.registerHandle(act_state);
       act_extra_interface_.registerHandle(act_extra);
       // RoboMaster motors are effect actuator
-      if (type.find("rm") != std::string::npos || type.find("cheetah") != std::string::npos)
+      if (type.find("rm") != std::string::npos || type.find("cheetah") != std::string::npos ||
+          type.find("ch") != std::string::npos)
       {
         effort_act_interface_.registerHandle(
             hardware_interface::ActuatorHandle(act_state, &bus_id2act_data_[bus][id].exe_effort));
       }
       else
       {
-        ROS_ERROR_STREAM("Actuator " << it->first << "'s type neither RoboMaster(rm_xxx) nor Cheetah(cheetah_xxx)");
+        ROS_ERROR_STREAM("Actuator " << it->first
+                                     << "'s type neither RoboMaster(rm_xxx),ch_xxx,nor Cheetah(cheetah_xxx)");
         return false;
       }
     }

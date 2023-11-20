@@ -57,6 +57,9 @@ struct ActData
   ros::Time stamp;
   uint64_t seq;
   bool halted = false, need_calibration = false, calibrated = false, calibration_reading = false;
+  int32_t ch_q_raw;
+  int16_t ch_qd_raw;
+  int32_t ch_q_last;
   uint16_t q_raw;
   int16_t qd_raw;
   uint8_t temp;

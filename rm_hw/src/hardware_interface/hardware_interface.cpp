@@ -76,6 +76,7 @@ bool RmRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     for (int i = 0; i < xml_rpc_value.size(); ++i)
     {
       std::string bus_name = xml_rpc_value[i];
+      ROS_INFO("%s", bus_name.data());
       if (bus_name.find("can") != std::string::npos)
         can_buses_.push_back(new CanBus(bus_name,
                                         CanDataPtr{ .type2act_coeffs_ = &type2act_coeffs_,
@@ -203,8 +204,6 @@ void RmRobotHW::publishActuatorState(const ros::Time& time)
           actuator_state.need_calibration.push_back(act_data.second.need_calibration);
           actuator_state.calibrated.push_back(act_data.second.calibrated);
           actuator_state.calibration_reading.push_back(act_data.second.calibration_reading);
-          actuator_state.position_raw.push_back(act_data.second.q_raw);
-          actuator_state.velocity_raw.push_back(act_data.second.qd_raw);
           actuator_state.temperature.push_back(act_data.second.temp);
           actuator_state.circle.push_back(act_data.second.q_circle);
           actuator_state.last_position_raw.push_back(act_data.second.q_last);
@@ -215,6 +214,17 @@ void RmRobotHW::publishActuatorState(const ros::Time& time)
           actuator_state.commanded_effort.push_back(act_data.second.cmd_effort);
           actuator_state.executed_effort.push_back(act_data.second.exe_effort);
           actuator_state.offset.push_back(act_data.second.offset);
+
+          if (actuator_state.type.data()->find("ch") != std::string::npos)
+          {
+            actuator_state.position_raw.push_back(act_data.second.ch_q_raw);
+            actuator_state.velocity_raw.push_back(act_data.second.ch_qd_raw);
+          }
+          if (actuator_state.type.data()->find("rm") != std::string::npos)
+          {
+            actuator_state.position_raw.push_back(act_data.second.q_raw);
+            actuator_state.velocity_raw.push_back(act_data.second.qd_raw);
+          }
         }
       actuator_state_pub_->msg_ = actuator_state;
       actuator_state_pub_->unlockAndPublish();
