@@ -68,6 +68,8 @@ struct ActData
   double offset;
   // For multiple cycle under absolute encoder (RoboMaster motor)
   LowPassFilter* lp_filter;
+  // For MIT motor state
+  uint8_t motor_mode = 0;
 };
 
 struct ImuData

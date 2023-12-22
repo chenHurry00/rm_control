@@ -56,6 +56,33 @@ CanBus::CanBus(const std::string& bus_name, CanDataPtr data_ptr, int thread_prio
   rm_frame1_.can_dlc = 8;
 }
 
+CanBus::~CanBus()
+{
+  for (auto& item : *data_ptr_.id2act_data_)
+  {
+    if (item.second.type.find("cheetah") != std::string::npos)
+    {
+      if (item.second.motor_mode != 0)  // Open MIT motor
+      {
+        can_frame frame{};
+        frame.can_id = item.first;
+        frame.can_dlc = 8;
+        frame.data[0] = 0xFF;
+        frame.data[1] = 0xFF;
+        frame.data[2] = 0xFF;
+        frame.data[3] = 0xFF;
+        frame.data[4] = 0xFF;
+        frame.data[5] = 0xFF;
+        frame.data[6] = 0xFF;
+        frame.data[7] = 0xFD;
+        for (int i = 0; i < 3; i++)
+          socket_can_.write(&frame);
+        item.second.motor_mode = 0;
+      }
+    }
+  }
+}
+
 void CanBus::write()
 {
   bool has_write_frame0 = false, has_write_frame1 = false;
@@ -88,25 +115,45 @@ void CanBus::write()
     }
     else if (item.second.type.find("cheetah") != std::string::npos)
     {
-      can_frame frame{};
-      const ActCoeff& act_coeff = data_ptr_.type2act_coeffs_->find(item.second.type)->second;
-      frame.can_id = item.first;
-      frame.can_dlc = 8;
-      uint16_t q_des = static_cast<int>(act_coeff.pos2act * (item.second.cmd_pos - act_coeff.act2pos_offset));
-      uint16_t qd_des = static_cast<int>(act_coeff.vel2act * (item.second.cmd_vel - act_coeff.act2vel_offset));
-      uint16_t kp = 0.;
-      uint16_t kd = 0.;
-      uint16_t tau = static_cast<int>(act_coeff.effort2act * (item.second.exe_effort - act_coeff.act2effort_offset));
-      // TODO(qiayuan) add position vel and effort hardware interface for MIT Cheetah Motor, now we using it as an effort joint.
-      frame.data[0] = q_des >> 8;
-      frame.data[1] = q_des & 0xFF;
-      frame.data[2] = qd_des >> 4;
-      frame.data[3] = ((qd_des & 0xF) << 4) | (kp >> 8);
-      frame.data[4] = kp & 0xFF;
-      frame.data[5] = kd >> 4;
-      frame.data[6] = ((kd & 0xF) << 4) | (tau >> 8);
-      frame.data[7] = tau & 0xff;
-      socket_can_.write(&frame);
+      if (item.second.motor_mode != 1)  // Open MIT motor
+      {
+        can_frame frame{};
+        frame.can_id = item.first;
+        frame.can_dlc = 8;
+        frame.data[0] = 0xFF;
+        frame.data[1] = 0xFF;
+        frame.data[2] = 0xFF;
+        frame.data[3] = 0xFF;
+        frame.data[4] = 0xFF;
+        frame.data[5] = 0xFF;
+        frame.data[6] = 0xFF;
+        frame.data[7] = 0xFC;
+        for (int i = 0; i < 3; i++)
+          socket_can_.write(&frame);
+        item.second.motor_mode = 1;
+      }
+      else
+      {
+        can_frame frame{};
+        const ActCoeff& act_coeff = data_ptr_.type2act_coeffs_->find(item.second.type)->second;
+        frame.can_id = item.first;
+        frame.can_dlc = 8;
+        uint16_t q_des = static_cast<int>(act_coeff.pos2act * (item.second.cmd_pos - act_coeff.act2pos_offset));
+        uint16_t qd_des = static_cast<int>(act_coeff.vel2act * (item.second.cmd_vel - act_coeff.act2vel_offset));
+        uint16_t kp = 0.;
+        uint16_t kd = 0.;
+        uint16_t tau = static_cast<int>(act_coeff.effort2act * (item.second.exe_effort - act_coeff.act2effort_offset));
+        // TODO(qiayuan) add position vel and effort hardware interface for MIT Cheetah Motor, now we using it as an effort joint.
+        frame.data[0] = q_des >> 8;
+        frame.data[1] = q_des & 0xFF;
+        frame.data[2] = qd_des >> 4;
+        frame.data[3] = ((qd_des & 0xF) << 4) | (kp >> 8);
+        frame.data[4] = kp & 0xFF;
+        frame.data[5] = kd >> 4;
+        frame.data[6] = ((kd & 0xF) << 4) | (tau >> 8);
+        frame.data[7] = tau & 0xff;
+        socket_can_.write(&frame);
+      }
     }
   }
 

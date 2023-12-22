@@ -71,6 +71,7 @@ class RmRobotHW : public hardware_interface::RobotHW
 {
 public:
   RmRobotHW() = default;
+  ~RmRobotHW();
   /** \brief Get necessary params from param server. Init hardware_interface.
    *
    * Get params from param server and check whether these params are set. Load urdf of robot. Set up transmission and

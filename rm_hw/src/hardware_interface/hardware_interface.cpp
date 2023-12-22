@@ -118,6 +118,12 @@ bool RmRobotHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
   return true;
 }
 
+RmRobotHW::~RmRobotHW()
+{
+  for (auto item : can_buses_)
+    delete item;
+}
+
 void RmRobotHW::read(const ros::Time& time, const ros::Duration& period)
 {
   for (auto bus : can_buses_)
