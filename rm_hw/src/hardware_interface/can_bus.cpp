@@ -64,19 +64,19 @@ CanBus::~CanBus()
     {
       if (item.second.motor_mode != 0)  // Open MIT motor
       {
-        can_frame frame{};
-        frame.can_id = item.first;
-        frame.can_dlc = 8;
-        frame.data[0] = 0xFF;
-        frame.data[1] = 0xFF;
-        frame.data[2] = 0xFF;
-        frame.data[3] = 0xFF;
-        frame.data[4] = 0xFF;
-        frame.data[5] = 0xFF;
-        frame.data[6] = 0xFF;
-        frame.data[7] = 0xFD;
-        for (int i = 0; i < 3; i++)
-          socket_can_.write(&frame);
+        //        can_frame frame{};
+        //        frame.can_id = item.first;
+        //        frame.can_dlc = 8;
+        //        frame.data[0] = 0xFF;
+        //        frame.data[1] = 0xFF;
+        //        frame.data[2] = 0xFF;
+        //        frame.data[3] = 0xFF;
+        //        frame.data[4] = 0xFF;
+        //        frame.data[5] = 0xFF;
+        //        frame.data[6] = 0xFF;
+        //        frame.data[7] = 0xFD;
+        //        for (int i = 0; i < 3; i++)
+        //          socket_can_.write(&frame);
         item.second.motor_mode = 0;
       }
     }
@@ -117,19 +117,19 @@ void CanBus::write()
     {
       if (item.second.motor_mode != 1)  // Open MIT motor
       {
-        can_frame frame{};
-        frame.can_id = item.first;
-        frame.can_dlc = 8;
-        frame.data[0] = 0xFF;
-        frame.data[1] = 0xFF;
-        frame.data[2] = 0xFF;
-        frame.data[3] = 0xFF;
-        frame.data[4] = 0xFF;
-        frame.data[5] = 0xFF;
-        frame.data[6] = 0xFF;
-        frame.data[7] = 0xFC;
-        for (int i = 0; i < 3; i++)
-          socket_can_.write(&frame);
+        //        can_frame frame{};
+        //        frame.can_id = item.first;
+        //        frame.can_dlc = 8;
+        //        frame.data[0] = 0xFF;
+        //        frame.data[1] = 0xFF;
+        //        frame.data[2] = 0xFF;
+        //        frame.data[3] = 0xFF;
+        //        frame.data[4] = 0xFF;
+        //        frame.data[5] = 0xFF;
+        //        frame.data[6] = 0xFF;
+        //        frame.data[7] = 0xFC;
+        //        for (int i = 0; i < 3; i++)
+        //          socket_can_.write(&frame);
         item.second.motor_mode = 1;
       }
       else
